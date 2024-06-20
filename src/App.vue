@@ -1,55 +1,38 @@
 <script setup>
-import { computed, ref } from "vue";
+import { ref, onMounted } from "vue";
+import ChildComp from "./components/ChildComp.vue";
+import JSConfetti from 'js-confetti'
 
-let id = 0;
-const hideCompleted = ref(false);
-const newTodo = ref("");
-const todos = ref([]);
+const confetti = new JSConfetti()
 
-function addTodo() {
-  todos.value.push({
-    id: id++,
-    text: newTodo.value,
-    done: false,
-  });
-  newTodo.value = "";
+function showConfetti() {
+  confetti.addConfetti()
 }
 
-function removeTodo(todo) {
-  const index = todos.value.indexOf(todo);
-  if (index > -1) {
-    todos.value.splice(index, 1);
-  }
-}
+const pElem = ref(null);
+const changedText = ref("");
+const res = ref("No response yet");
 
-const filterTodos = computed(() => {
-  return hideCompleted.value
-    ? todos.value.filter((todo) => !todo.done)
-    : todos.value;
+const changeText = () => {
+  pElem.value.textContent = changedText.value;
+  changedText.value = " ";
+};
+
+onMounted(() => {
+  pElem.value.style.color = "red";
+  pElem.value.style.fontSize = "50px";
 });
 </script>
 
 <template>
   <center>
-    <form @submit.prevent="addTodo">
-      <input v-model="newTodo" required placeholder="new todo" />
-    <button>Add Todo</button>
-  </form>
-  <ul>
-    <li v-for="todo in filterTodos" :key="todo.id">
-      <input type="checkbox" v-model="todo.done" />
-      <span :class="{ done: todo.done }">{{ todo.text }}</span>
-      <button @click="removeTodo(todo)">X</button>
-    </li>
-  </ul>
-  <button @click="hideCompleted = !hideCompleted">
-    {{ hideCompleted ? "Show all" : "Hide completed" }}
-  </button>
-</center>
+    <p ref="pElem">Hello World</p>
+    <input type="text" v-model="changedText" />
+    <button @click="changeText">Change Text</button>
+    <ChildComp :msg="changedText" @response="(msg) => (res = msg)">
+      <p>Respone from parent to child</p>
+    </ChildComp>
+    <p>Response: {{ res }}</p>
+    <button @click="showConfetti">Show Confetti</button>
+  </center>
 </template>
-
-<style>
-.done {
-  text-decoration: line-through;
-}
-</style>
